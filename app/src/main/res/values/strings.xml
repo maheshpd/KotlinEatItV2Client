@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">KotlinEatItV2Client</string>
+
+    <string name="FACEBOOK_APP_ID">2519671388315141</string>
+    <string name="ACCOUNT_KIT_CLIENT_TOKEN">[ACCOUNT_KIT_CLIENT_TOKEN]</string>
+
+</resources>
