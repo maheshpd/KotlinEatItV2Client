@@ -22,6 +22,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
 }
 
 dependencies {
@@ -41,8 +45,8 @@ dependencies {
     //Firebase Database
     implementation 'com.google.firebase:firebase-auth:19.2.0'
 
-    //Facebook Account Kit
-    implementation 'com.facebook.android:account-kit-sdk:5.4.0'
+    implementation 'com.firebaseui:firebase-ui-auth:5.0.0'
+
 
     //Retrofit2
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.6.1'
