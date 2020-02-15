@@ -9,19 +9,17 @@ import android.view.LayoutInflater
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.createsapp.kotlineatitv2client.Common.Common
-import com.createsapp.kotlineatitv2client.Model.UserModel
-import com.createsapp.kotlineatitv2client.Remote.ICloudFunction
-import com.createsapp.kotlineatitv2client.Remote.RetrofitCloudClient
+import com.createsapp.kotlineatitv2client.common.Common
+import com.createsapp.kotlineatitv2client.model.UserModel
+import com.createsapp.kotlineatitv2client.remote.ICloudFunction
+import com.createsapp.kotlineatitv2client.remote.RetrofitCloudClient
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import dmax.dialog.SpotsDialog
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -160,6 +158,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun goToHomeActivity(userModel: UserModel?) {
         Common.currentUser = userModel!!
+        startActivity(Intent(this,HomeActivity::class.java))
+        finish()
 
     }
 

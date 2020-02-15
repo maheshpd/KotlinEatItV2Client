@@ -1,4 +1,4 @@
-package com.createsapp.kotlineatitv2client.Model
+package com.createsapp.kotlineatitv2client.model
 
 class UserModel {
 

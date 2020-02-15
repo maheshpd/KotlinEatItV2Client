@@ -1,10 +1,9 @@
-package com.createsapp.kotlineatitv2client.Remote
+package com.createsapp.kotlineatitv2client.remote
 
 import io.reactivex.Observable
 import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Query
-import java.util.*
 
 interface ICloudFunction {
     @GET("")

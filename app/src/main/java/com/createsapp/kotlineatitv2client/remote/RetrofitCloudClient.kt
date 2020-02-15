@@ -1,4 +1,4 @@
-package com.createsapp.kotlineatitv2client.Remote
+package com.createsapp.kotlineatitv2client.remote
 
 
 import retrofit2.Retrofit
