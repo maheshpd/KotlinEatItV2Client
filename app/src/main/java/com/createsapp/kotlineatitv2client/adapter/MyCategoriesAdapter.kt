@@ -9,8 +9,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.createsapp.kotlineatitv2client.R
+import com.createsapp.kotlineatitv2client.callback.IRecyclerItemClickListener
 import com.createsapp.kotlineatitv2client.common.Common
+import com.createsapp.kotlineatitv2client.eventbus.CategoryClick
 import com.createsapp.kotlineatitv2client.model.CategoryModel
+import org.greenrobot.eventbus.EventBus
 
 class MyCategoriesAdapter(
     internal var context: Context,
@@ -18,13 +21,25 @@ class MyCategoriesAdapter(
 ) :
     RecyclerView.Adapter<MyCategoriesAdapter.MyViewHolder>() {
 
-    inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
+        View.OnClickListener {
         var category_name: TextView? = null
         var category_image: ImageView? = null
+
+       internal var listener: IRecyclerItemClickListener? = null
+
+        fun setListener(listener: IRecyclerItemClickListener) {
+            this.listener = listener
+        }
 
         init {
             category_name = itemView.findViewById(R.id.category_name) as TextView
             category_image = itemView.findViewById(R.id.category_image) as ImageView
+            itemView.setOnClickListener(this)
+        }
+
+        override fun onClick(view: View?) {
+            listener!!.onItemClick(view!!,adapterPosition)
         }
     }
 
@@ -56,5 +71,14 @@ class MyCategoriesAdapter(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         Glide.with(context).load(categoriesList.get(position).image).into(holder.category_image!!)
         holder.category_name!!.setText(categoriesList.get(position).name)
+
+        //Event
+        holder.setListener(object: IRecyclerItemClickListener {
+            override fun onItemClick(view: View, pos: Int) {
+                Common.categorySelected = categoriesList.get(pos)
+                EventBus.getDefault().postSticky(CategoryClick(true,categoriesList.get(pos)))
+            }
+
+        })
     }
 }
