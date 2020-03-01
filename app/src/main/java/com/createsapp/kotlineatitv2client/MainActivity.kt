@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity() {
 //                Toast.makeText(this@MainActivity, "Already login", Toast.LENGTH_SHORT).show()
 
 
-                        checkUserFromFirebase(user!!)
+                        checkUserFromFirebase(user)
             } else {
                     phoneLogin()
             }
@@ -79,8 +79,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkUserFromFirebase(user: FirebaseUser) {
-        dialog!!.show()
-        userRef!!.child(user!!.uid)
+        dialog.show()
+        userRef.child(user.uid)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
                     Toast.makeText(this@MainActivity, "" + p0.message, Toast.LENGTH_SHORT).show()
@@ -93,10 +93,10 @@ class MainActivity : AppCompatActivity() {
                         goToHomeActivity(userModel)
 
                     } else {
-                        showRegisterDialog(user!!)
+                        showRegisterDialog(user)
                     }
 
-                    dialog!!.dismiss()
+                    dialog.dismiss()
 
                 }
 
@@ -117,10 +117,10 @@ class MainActivity : AppCompatActivity() {
         val edt_phone = itemView.findViewById<EditText>(R.id.edt_phone)
 
         //Set
-            edt_phone.setText(user!!.phoneNumber)
+            edt_phone.setText(user.phoneNumber)
         builder.setView(itemView)
-        builder.setNegativeButton("CANCEL") { dialogInterface, i -> dialogInterface.dismiss() }
-        builder.setPositiveButton("REGISTER") { dialogInterface, i ->
+        builder.setNegativeButton("CANCEL") { dialogInterface, _ -> dialogInterface.dismiss() }
+        builder.setPositiveButton("REGISTER") { dialogInterface, _ ->
             if (TextUtils.isDigitsOnly(edt_name.text.toString())) {
                 Toast.makeText(this@MainActivity, "Please enter your name", Toast.LENGTH_SHORT)
                     .show()
@@ -132,12 +132,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             val userModel = UserModel()
-            userModel.uid = user!!.uid
+            userModel.uid = user.uid
             userModel.name = edt_name.text.toString()
             userModel.address = edt_address.text.toString()
             userModel.phone = edt_phone.text.toString()
 
-            userRef!!.child(user!!.uid)
+            userRef.child(user.uid)
                 .setValue(userModel)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
@@ -172,10 +172,10 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == APP_REQUEST_CODE)
         {
-            val response = IdpResponse.fromResultIntent(data)
+            IdpResponse.fromResultIntent(data)
             if (resultCode == Activity.RESULT_OK)
             {
-                val user = FirebaseAuth.getInstance().currentUser
+                FirebaseAuth.getInstance().currentUser
             } else {
                 Toast.makeText(this,"Failed to sign in",Toast.LENGTH_SHORT).show()
             }

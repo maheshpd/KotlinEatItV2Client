@@ -5,6 +5,8 @@ import com.createsapp.kotlineatitv2client.model.FoodModel
 import com.createsapp.kotlineatitv2client.model.UserModel
 
 object Common {
+
+    val COMMENT_REF: String = "Comments"
     var foodSelected: FoodModel? = null
     var categorySelected: CategoryModel? = null
     val CATEGORY_REF: String = "Category"
