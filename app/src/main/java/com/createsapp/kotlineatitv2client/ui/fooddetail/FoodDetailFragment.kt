@@ -35,6 +35,7 @@ class FoodDetailFragment : Fragment() {
     private var number_button: ElegantNumberButton? = null
     private var ratingBar: RatingBar? = null
     private var btnShowComment: Button? = null
+    private var rdi_group_size: RadioGroup? = null
 
     private var waitingDialog: android.app.AlertDialog? = null
 
@@ -81,23 +82,22 @@ class FoodDetailFragment : Fragment() {
             .child(Common.categorySelected!!.menu_id!!) //Select menu in category
             .child("foods") //Select foods array
             .child(Common.foodSelected!!.key!!) //Select key
-            .addListenerForSingleValueEvent(object:ValueEventListener{
+            .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
                     waitingDialog!!.dismiss()
-                    Toast.makeText(context!!,""+p0.message,Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context!!, "" + p0.message, Toast.LENGTH_SHORT).show()
                 }
 
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    if (dataSnapshot.exists())
-                    {
+                    if (dataSnapshot.exists()) {
                         val foodModel = dataSnapshot.getValue(FoodModel::class.java)
                         foodModel!!.key = Common.foodSelected!!.key
                         //Apply rating
                         val sumRating = foodModel.ratingValue.toDouble() + (ratingValue)
-                         val ratingCount = foodModel.ratingCount+1
-                        val result = sumRating/ratingCount
+                        val ratingCount = foodModel.ratingCount + 1
+                        val result = sumRating / ratingCount
 
-                        val updateData = HashMap<String,Any>()
+                        val updateData = HashMap<String, Any>()
                         updateData["ratingValue"] = result
                         updateData["ratingCount"] = ratingCount
 
@@ -109,15 +109,14 @@ class FoodDetailFragment : Fragment() {
                             .updateChildren(updateData)
                             .addOnCompleteListener { task ->
                                 waitingDialog!!.dismiss()
-                                if (task.isSuccessful)
-                                {
+                                if (task.isSuccessful) {
                                     Common.foodSelected = foodModel
                                     foodDetailViewModel.setFoodModel(foodModel)
-                                    Toast.makeText(context!!,"Thank you",Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context!!, "Thank you", Toast.LENGTH_SHORT)
+                                        .show()
                                 }
                             }
-                    }
-                    else
+                    } else
                         waitingDialog!!.dismiss()
                 }
 
@@ -129,8 +128,47 @@ class FoodDetailFragment : Fragment() {
         food_name!!.text = StringBuilder(it.name!!)
         food_description!!.text = StringBuilder(it.description!!)
         food_price!!.text = StringBuilder(it.price!!).toString()
-
         ratingBar!!.rating = it.ratingValue.toFloat()
+
+        //Set Size
+        for (sizeModel in it.size) {
+            val radioButton = RadioButton(context)
+            radioButton.setOnCheckedChangeListener { compoundButon, b ->
+                if (b)
+                    Common.foodSelected!!.userSelectedSize = sizeModel
+                calculateTotalPrice()
+            }
+
+            var params = LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.MATCH_PARENT, 1.0f
+            )
+            radioButton.layoutParams = params
+            radioButton.text = sizeModel.name
+            radioButton.tag = sizeModel.price
+
+            rdi_group_size!!.addView(radioButton)
+        }
+
+        //Default first radio button select
+        if (rdi_group_size!!.childCount > 0) {
+            val radioButton = rdi_group_size!!.getChildAt(0) as RadioButton
+            radioButton.isChecked = true
+        }
+    }
+
+    private fun calculateTotalPrice() {
+        var totalPrice = Common.foodSelected!!.price!!.toDouble()
+        var displayPrice = 0.0
+
+        //Size
+        totalPrice += Common.foodSelected!!.userSelectedSize!!.price!!.toDouble()
+
+        displayPrice = totalPrice * number_button!!.number.toInt()
+        displayPrice = Math.round(displayPrice * 100.0) / 100.0
+
+        food_price!!.text =
+            java.lang.StringBuilder("").append(Common.formatPrice(displayPrice)).toString()
     }
 
     private fun initViews(root: View?) {
@@ -146,6 +184,8 @@ class FoodDetailFragment : Fragment() {
         number_button = root.findViewById(R.id.number_button) as ElegantNumberButton
         ratingBar = root.findViewById(R.id.ratingBar) as RatingBar
         btnShowComment = root.findViewById(R.id.btnShowComment) as Button
+        rdi_group_size = root.findViewById(R.id.rdi_group_size) as RadioGroup
+
 
         //Event
         btnRating!!.setOnClickListener {
