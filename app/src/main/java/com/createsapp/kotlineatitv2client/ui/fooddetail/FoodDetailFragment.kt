@@ -1,7 +1,6 @@
 package com.createsapp.kotlineatitv2client.ui.fooddetail
 
 import android.content.DialogInterface
-import android.media.Rating
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +17,7 @@ import com.createsapp.kotlineatitv2client.R
 import com.createsapp.kotlineatitv2client.common.Common
 import com.createsapp.kotlineatitv2client.model.CommentModel
 import com.createsapp.kotlineatitv2client.model.FoodModel
+import com.createsapp.kotlineatitv2client.ui.comment.CommentFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.database.*
 import dmax.dialog.SpotsDialog
@@ -93,7 +93,7 @@ class FoodDetailFragment : Fragment() {
                         val foodModel = dataSnapshot.getValue(FoodModel::class.java)
                         foodModel!!.key = Common.foodSelected!!.key
                         //Apply rating
-                        val sumRating = foodModel.ratingValue!!.toDouble()+(ratingValue)
+                        val sumRating = foodModel.ratingValue.toDouble() + (ratingValue)
                          val ratingCount = foodModel.ratingCount+1
                         val result = sumRating/ratingCount
 
@@ -112,7 +112,7 @@ class FoodDetailFragment : Fragment() {
                                 if (task.isSuccessful)
                                 {
                                     Common.foodSelected = foodModel
-                                    foodDetailViewModel!!.setFoodModel(foodModel)
+                                    foodDetailViewModel.setFoodModel(foodModel)
                                     Toast.makeText(context!!,"Thank you",Toast.LENGTH_SHORT).show()
                                 }
                             }
@@ -130,7 +130,7 @@ class FoodDetailFragment : Fragment() {
         food_description!!.text = StringBuilder(it.description!!)
         food_price!!.text = StringBuilder(it.price!!).toString()
 
-        ratingBar!!.rating= it!!.ratingValue.toFloat()
+        ratingBar!!.rating = it.ratingValue.toFloat()
     }
 
     private fun initViews(root: View?) {
@@ -151,6 +151,12 @@ class FoodDetailFragment : Fragment() {
         btnRating!!.setOnClickListener {
             showRatingDialog()
         }
+
+        btnShowComment!!.setOnClickListener {
+            val commentFragment = CommentFragment.getInstance()
+            commentFragment.show(activity!!.supportFragmentManager, "CommentFragment")
+        }
+
     }
 
     private fun showRatingDialog() {
@@ -176,7 +182,7 @@ class FoodDetailFragment : Fragment() {
             serverTimeStamp["timeStamp"] = ServerValue.TIMESTAMP
             commentModel.commentTimeStamp = (serverTimeStamp)
 
-            foodDetailViewModel!!.setCommentModel(commentModel)
+            foodDetailViewModel.setCommentModel(commentModel)
         }
 
         val dialog = builder.create()
