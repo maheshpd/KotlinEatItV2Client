@@ -339,7 +339,6 @@ class FoodDetailFragment : Fragment(), TextWatcher {
                         Common.foodSelected!!.userSelectedAddon!!.add(addonModel)
                     }
                 }
-
                 chip_group_Addon!!.addView(chip)
             }
         }
