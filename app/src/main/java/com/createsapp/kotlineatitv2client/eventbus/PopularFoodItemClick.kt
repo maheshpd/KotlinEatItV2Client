@@ -1,0 +1,5 @@
+package com.createsapp.kotlineatitv2client.eventbus
+
+import com.createsapp.kotlineatitv2client.model.PopularCategotyModel
+
+class PopularFoodItemClick(var popularCategoryModel: PopularCategotyModel)
