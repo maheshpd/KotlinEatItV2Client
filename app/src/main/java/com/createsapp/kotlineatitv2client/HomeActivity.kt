@@ -1,11 +1,14 @@
 package com.createsapp.kotlineatitv2client
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -20,6 +23,7 @@ import com.createsapp.kotlineatitv2client.eventbus.FoodItemClick
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -33,6 +37,9 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var cartDataSource: CartDataSource
+    private lateinit var navController: NavController
+    private var drawer: DrawerLayout? = null
+
 
     override fun onResume() {
         super.onResume()
@@ -55,7 +62,7 @@ class HomeActivity : AppCompatActivity() {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
         }
-        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
+        drawer = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
         val navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
@@ -63,11 +70,52 @@ class HomeActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_home, R.id.nav_menu, R.id.nav_food_detail,
-                R.id.nav_tools, R.id.nav_send
-            ), drawerLayout
+                R.id.nav_tools
+            ), drawer
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        var headerView = navView.getHeaderView(0)
+        var txt_user = headerView.findViewById<TextView>(R.id.txt_user)
+        Common.setSpanString("Hey", Common.currentUser!!.uid, txt_user)
+
+        navView.setNavigationItemSelectedListener { item ->
+
+            item.isChecked = true
+            drawer!!.closeDrawers()
+
+            if (item.itemId == R.id.nav_sign_out) {
+                signOut()
+            } else if (item.itemId == R.id.nav_home) {
+                navController.navigate(R.id.nav_home)
+            } else if (item.itemId == R.id.nav_cart) {
+                navController.navigate(R.id.nav_cart)
+            } else if (item.itemId == R.id.nav_menu) {
+                navController.navigate(R.id.nav_menu)
+            }
+            true
+        }
+        countCartItem()
+
+    }
+
+    private fun signOut() {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        builder.setTitle("Sign out")
+            .setMessage("Doy you really want to exit?")
+            .setNegativeButton("CANCEL") { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton("OK") { dialog, _ ->
+                Common.foodSelected = null
+                Common.categorySelected = null
+                Common.currentUser = null
+                FirebaseAuth.getInstance().signOut()
+
+                val intent = Intent(this@HomeActivity, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

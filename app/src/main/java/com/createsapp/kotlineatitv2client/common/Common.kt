@@ -1,5 +1,11 @@
 package com.createsapp.kotlineatitv2client.common
 
+import android.graphics.Typeface
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.style.StyleSpan
+import android.widget.TextView
 import com.createsapp.kotlineatitv2client.model.CategoryModel
 import com.createsapp.kotlineatitv2client.model.FoodModel
 import com.createsapp.kotlineatitv2client.model.UserModel
@@ -16,6 +22,16 @@ object Common {
         } else {
             return "0.00"
         }
+    }
+
+    fun setSpanString(welcome: String, name: String?, txtUser: TextView?) {
+        val builder = SpannableStringBuilder()
+        builder.append(welcome)
+        val txtSpannable = SpannableString(name)
+        val boldSpan = StyleSpan(Typeface.BOLD)
+        txtSpannable.setSpan(boldSpan, 0, name!!.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        builder.append(txtSpannable)
+        txtUser!!.setText(builder, TextView.BufferType.SPANNABLE)
     }
 
     val COMMENT_REF: String = "Comments"
