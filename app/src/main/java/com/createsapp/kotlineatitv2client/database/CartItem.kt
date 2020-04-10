@@ -3,12 +3,10 @@ package com.createsapp.kotlineatitv2client.database
 import androidx.annotation.NonNull
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
 @Entity(tableName = "Cart", primaryKeys = ["uid", "foodId", "foodSize", "foodAddon"])
 
 class CartItem {
-    @PrimaryKey
     @NonNull
     @ColumnInfo(name = "foodId")
     var foodId: String = ""

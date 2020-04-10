@@ -118,7 +118,7 @@ class MyFoodListaAdapter(
             cartItem.foodSize = "Default"
 
             cartDataSource.getItemWithAllOptionsInCart(
-                Common.currentUser!!.uid,
+                Common.currentUser!!.uid!!,
                 cartItem.foodId,
                 cartItem.foodSize!!,
                 cartItem.foodAddon!!

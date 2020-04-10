@@ -6,9 +6,7 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.StyleSpan
 import android.widget.TextView
-import com.createsapp.kotlineatitv2client.model.CategoryModel
-import com.createsapp.kotlineatitv2client.model.FoodModel
-import com.createsapp.kotlineatitv2client.model.UserModel
+import com.createsapp.kotlineatitv2client.model.*
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
@@ -32,6 +30,28 @@ object Common {
         txtSpannable.setSpan(boldSpan, 0, name!!.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         builder.append(txtSpannable)
         txtUser!!.setText(builder, TextView.BufferType.SPANNABLE)
+    }
+
+    fun calculateExtraPrice(
+        userSelectedSize: SizeModel?,
+        userSelectedAddon: MutableList<AddonModel>?
+    ): Double {
+        var result: Double = 0.0
+        if (userSelectedSize == null && userSelectedAddon == null)
+            return 0.0
+        else if (userSelectedSize == null) {
+            for (addonModel in userSelectedAddon!!)
+                result += addonModel.price!!.toDouble()
+            return result
+        } else if (userSelectedAddon == null) {
+            result = userSelectedSize.price!!.toDouble()
+            return result
+        } else {
+            result = userSelectedSize.price!!.toDouble()
+            for (addonModel in userSelectedAddon)
+                result += addonModel.price!!.toDouble()
+            return result
+        }
     }
 
     val COMMENT_REF: String = "Comments"
