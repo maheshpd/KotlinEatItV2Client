@@ -27,7 +27,6 @@ import com.createsapp.kotlineatitv2client.model.CategoryModel
 import com.createsapp.kotlineatitv2client.model.FoodModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -71,8 +70,7 @@ class HomeActivity : AppCompatActivity() {
 
         val fab: FloatingActionButton = findViewById(R.id.fab)
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            navController.navigate(R.id.nav_cart)
         }
         drawer = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
@@ -82,7 +80,7 @@ class HomeActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_home, R.id.nav_menu, R.id.nav_food_detail,
-                R.id.nav_tools
+                R.id.nav_cart
             ), drawer
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
