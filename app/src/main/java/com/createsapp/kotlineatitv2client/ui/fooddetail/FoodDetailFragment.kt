@@ -151,10 +151,10 @@ class FoodDetailFragment : Fragment(), TextWatcher {
     }
 
     private fun displayInfo(it: FoodModel?) {
-        Glide.with(context!!).load(it!!.image).into(img_food!!)
+        Glide.with(requireContext()).load(it!!.image).into(img_food!!)
         food_name!!.text = StringBuilder(it.name!!)
         food_description!!.text = StringBuilder(it.description!!)
-        food_price!!.text = StringBuilder(it.price!!).toString()
+//        food_price!!.text = StringBuilder(it.price!!).toString()
         ratingBar!!.rating = it.ratingValue.toFloat()
 
         //Set Size
@@ -185,17 +185,17 @@ class FoodDetailFragment : Fragment(), TextWatcher {
     }
 
     private fun calculateTotalPrice() {
-        var totalPrice = Common.foodSelected!!.price!!.toDouble()
+        var totalPrice = Common.foodSelected!!.price.toDouble()
         var displayPrice = 0.0
 
         //Addon
         if (Common.foodSelected!!.userSelectedAddon != null && Common.foodSelected!!.userSelectedAddon!!.size > 0) {
             for (addonModel in Common.foodSelected!!.userSelectedAddon!!)
-                totalPrice += addonModel.price!!.toDouble()
+                totalPrice += addonModel.price.toDouble()
         }
 
         //Size
-        totalPrice += Common.foodSelected!!.userSelectedSize!!.price!!.toDouble()
+        totalPrice += Common.foodSelected!!.userSelectedSize!!.price.toDouble()
 
         displayPrice = totalPrice * number_button!!.number.toInt()
         displayPrice = Math.round(displayPrice * 100.0) / 100.0
@@ -206,12 +206,13 @@ class FoodDetailFragment : Fragment(), TextWatcher {
 
     private fun initViews(root: View?) {
 
-        cartDataSource = LocalCartDataSource(CartDatabase.getInstance(context!!).cartDAO())
+        cartDataSource = LocalCartDataSource(CartDatabase.getInstance(requireContext()).cartDAO())
 
 
-        addonBottomSheetDialog = BottomSheetDialog(context!!, R.style.DialogStyle)
+        addonBottomSheetDialog = BottomSheetDialog(requireContext(), R.style.DialogStyle)
         val layout_user_selected_addon = layoutInflater.inflate(R.layout.layout_addon_display, null)
-        waitingDialog = SpotsDialog.Builder().setContext(context!!).setCancelable(false).build()
+        waitingDialog =
+            SpotsDialog.Builder().setContext(requireContext()).setCancelable(false).build()
         chip_group_Addon =
             layout_user_selected_addon.findViewById(R.id.chip_group_addon) as ChipGroup
         edt_search_addon = layout_user_selected_addon.findViewById(R.id.edt_search) as EditText
@@ -252,7 +253,7 @@ class FoodDetailFragment : Fragment(), TextWatcher {
 
         btnShowComment!!.setOnClickListener {
             val commentFragment = CommentFragment.getInstance()
-            commentFragment.show(activity!!.supportFragmentManager, "CommentFragment")
+            commentFragment.show(requireActivity().supportFragmentManager, "CommentFragment")
         }
 
         btnCart!!.setOnClickListener {
@@ -264,7 +265,7 @@ class FoodDetailFragment : Fragment(), TextWatcher {
             cartItem.foodId = Common.foodSelected!!.id!!
             cartItem.foodName = Common.foodSelected!!.name!!
             cartItem.foodImage = Common.foodSelected!!.image!!
-            cartItem.foodPrice = Common.foodSelected!!.price!!.toDouble()
+            cartItem.foodPrice = Common.foodSelected!!.price.toDouble()
             cartItem.foodQuantity = number_button!!.number.toInt()
             cartItem.foodExtraPrice = Common.calculateExtraPrice(
                 Common.foodSelected!!.userSelectedSize,
@@ -390,7 +391,7 @@ class FoodDetailFragment : Fragment(), TextWatcher {
     }
 
     private fun displayAllAddon() {
-        if (Common.foodSelected!!.addon.size > 0) {
+        if (Common.foodSelected!!.addon.isNotEmpty()) {
             chip_group_Addon!!.clearCheck()
             chip_group_Addon!!.removeAllViews()
             edt_search_addon!!.addTextChangedListener(this)
@@ -437,7 +438,7 @@ class FoodDetailFragment : Fragment(), TextWatcher {
 
     private fun showRatingDialog() {
 
-        var builder = AlertDialog.Builder(context!!)
+        var builder = AlertDialog.Builder(requireContext())
         builder.setTitle("Rating Food")
         builder.setMessage("Please fill information")
 
@@ -446,8 +447,8 @@ class FoodDetailFragment : Fragment(), TextWatcher {
         val edt_comment = itemView.findViewById<EditText>(R.id.edt_comment)
 
         builder.setView(itemView)
-        builder.setNegativeButton("CANCEL") { dialog: DialogInterface?, which: Int -> dialog!!.dismiss() }
-        builder.setPositiveButton("OK") { dialog: DialogInterface?, which: Int ->
+        builder.setNegativeButton("CANCEL") { dialog: DialogInterface?, _: Int -> dialog!!.dismiss() }
+        builder.setPositiveButton("OK") { dialog: DialogInterface?, _: Int ->
 
             val commentModel = CommentModel()
             commentModel.name = Common.currentUser!!.name
@@ -482,7 +483,7 @@ class FoodDetailFragment : Fragment(), TextWatcher {
                 val chip = layoutInflater.inflate(R.layout.layout_chip, null, false) as Chip
                 chip.text = StringBuilder(addonModel.name!!).append("(+$").append(addonModel.price)
                     .append(")").toString()
-                chip.setOnCheckedChangeListener { compoundButton, b ->
+                chip.setOnCheckedChangeListener { _, b ->
                     if (b) {
                         if (Common.foodSelected!!.userSelectedAddon == null)
                             Common.foodSelected!!.userSelectedAddon = ArrayList()

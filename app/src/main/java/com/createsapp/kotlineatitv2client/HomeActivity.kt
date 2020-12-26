@@ -44,6 +44,8 @@ import org.greenrobot.eventbus.ThreadMode
 
 class HomeActivity : AppCompatActivity() {
 
+    //trendinwealth@gmail.com
+
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var cartDataSource: CartDataSource
     private lateinit var navController: NavController
@@ -54,7 +56,6 @@ class HomeActivity : AppCompatActivity() {
         super.onResume()
         countCartItem()
     }
-
 
     override
     fun onCreate(savedInstanceState: Bundle?) {

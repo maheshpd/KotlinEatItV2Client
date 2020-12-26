@@ -18,8 +18,8 @@ class HomeViewModel : ViewModel(), IPopularLoadCallback, IBestDealLoadCallback {
     private var popularListMutableLiveData: MutableLiveData<List<PopularCategotyModel>>? = null
     private var bestDealListMutableLiveData: MutableLiveData<List<BestDealModel>>? = null
     private lateinit var messageError: MutableLiveData<String>
-    private var popularLoadCallbackListener: IPopularLoadCallback
-    private var bestDealCallbackListener: IBestDealLoadCallback
+    private var popularLoadCallbackListener: IPopularLoadCallback = this
+    private var bestDealCallbackListener: IBestDealLoadCallback = this
 
     val bestDealList: LiveData<List<BestDealModel>>
         get() {
@@ -67,11 +67,11 @@ class HomeViewModel : ViewModel(), IPopularLoadCallback, IBestDealLoadCallback {
         val popularRef = FirebaseDatabase.getInstance().getReference(Common.POPULAR_REF)
         popularRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
-                popularLoadCallbackListener.onPopularLoadFailed(p0.message!!)
+                popularLoadCallbackListener.onPopularLoadFailed(p0.message)
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                for (itemSnapShot in p0!!.children) {
+                for (itemSnapShot in p0.children) {
                     val model =
                         itemSnapShot.getValue<PopularCategotyModel>(PopularCategotyModel::class.java)
                     tempList.add(model!!)
@@ -85,7 +85,6 @@ class HomeViewModel : ViewModel(), IPopularLoadCallback, IBestDealLoadCallback {
     }
 
     init {
-        popularLoadCallbackListener = this
         bestDealCallbackListener = this
     }
 

@@ -70,8 +70,7 @@ class MainActivity : AppCompatActivity() {
                 //Already login
 //                Toast.makeText(this@MainActivity, "Already login", Toast.LENGTH_SHORT).show()
 
-
-                        checkUserFromFirebase(user)
+                  checkUserFromFirebase(user)
             } else {
                     phoneLogin()
             }
