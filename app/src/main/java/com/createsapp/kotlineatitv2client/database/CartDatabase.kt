@@ -20,6 +20,7 @@ abstract class CartDatabase : RoomDatabase() {
                     "EatItV2DB2"
                 ).build()
             return instance!!
+            //Comment
         }
     }
 }
