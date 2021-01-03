@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.view.animation.LayoutAnimationController
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -19,7 +18,6 @@ import com.createsapp.kotlineatitv2client.adapter.MyCategoriesAdapter
 import com.createsapp.kotlineatitv2client.common.Common
 import com.createsapp.kotlineatitv2client.common.SpacesItemDecoration
 import dmax.dialog.SpotsDialog
-import kotlinx.android.synthetic.main.fragment_category.*
 
 class MenuFragment : Fragment() {
     private lateinit var menuViewModel: MenuViewModel
@@ -39,13 +37,13 @@ class MenuFragment : Fragment() {
         val root = inflater.inflate(R.layout.fragment_category, container, false)
 
         initViews(root)
-        menuViewModel.getMessageError().observe(this, Observer {
+        menuViewModel.getMessageError().observe(viewLifecycleOwner, Observer {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
         })
 
-        menuViewModel.getCategoryList().observe(this, Observer {
+        menuViewModel.getCategoryList().observe(viewLifecycleOwner, Observer {
             dialog.dismiss()
-            adapter = MyCategoriesAdapter(context!!, it)
+            adapter = MyCategoriesAdapter(requireContext(), it)
             recycler_menu!!.adapter = adapter
             recycler_menu!!.layoutAnimation = layoutAnimationController
         })

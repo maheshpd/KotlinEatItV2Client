@@ -19,10 +19,7 @@ import com.createsapp.kotlineatitv2client.common.Common
 import com.createsapp.kotlineatitv2client.database.CartDataSource
 import com.createsapp.kotlineatitv2client.database.CartDatabase
 import com.createsapp.kotlineatitv2client.database.LocalCartDataSource
-import com.createsapp.kotlineatitv2client.eventbus.BestDealItemClick
-import com.createsapp.kotlineatitv2client.eventbus.CategoryClick
-import com.createsapp.kotlineatitv2client.eventbus.FoodItemClick
-import com.createsapp.kotlineatitv2client.eventbus.PopularFoodItemClick
+import com.createsapp.kotlineatitv2client.eventbus.*
 import com.createsapp.kotlineatitv2client.model.CategoryModel
 import com.createsapp.kotlineatitv2client.model.FoodModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -68,6 +65,8 @@ class HomeActivity : AppCompatActivity() {
 
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
+        navController = findNavController(R.id.nav_host_fragment)
+
 
         val fab: FloatingActionButton = findViewById(R.id.fab)
         fab.setOnClickListener { view ->
@@ -175,6 +174,14 @@ class HomeActivity : AppCompatActivity() {
         if (event.isSuccess) {
             countCartItem()
         }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    fun onHideFABEVENT(event: HideFABCart) {
+        if (event.isHide) {
+            fab.hide()
+        } else
+            fab.show()
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -312,7 +319,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun countCartItem() {
-        cartDataSource.countItemInCart(Common.currentUser!!.uid!!)
+        cartDataSource.countItemInCart(Common.currentUser?.uid!!)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(object : SingleObserver<Int> {
@@ -334,4 +341,5 @@ class HomeActivity : AppCompatActivity() {
 
             })
     }
+
 }

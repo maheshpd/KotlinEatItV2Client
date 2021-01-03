@@ -80,7 +80,7 @@ class FoodDetailFragment : Fragment(), TextWatcher {
             displayInfo(it)
         })
 
-        foodDetailViewModel.getMutableLiveDataComment().observe(this, Observer {
+        foodDetailViewModel.getMutableLiveDataComment().observe(viewLifecycleOwner, Observer {
             submitRatingToFirebase(it)
         })
         return root
