@@ -2,7 +2,9 @@ package com.createsapp.kotlineatitv2client.ui.cart
 
 import android.app.AlertDialog
 import android.graphics.Color
+import android.location.Location
 import android.os.Bundle
+import android.os.Looper
 import android.os.Parcelable
 import android.view.*
 import android.widget.*
@@ -24,6 +26,7 @@ import com.createsapp.kotlineatitv2client.database.LocalCartDataSource
 import com.createsapp.kotlineatitv2client.eventbus.CountCartEven
 import com.createsapp.kotlineatitv2client.eventbus.HideFABCart
 import com.createsapp.kotlineatitv2client.eventbus.UpdateItemInCart
+import com.google.android.gms.location.*
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -47,6 +50,11 @@ class CartFragment : Fragment() {
     var recycler_cart: RecyclerView? = null
     var adapter: MyCartAdapter? = null
 
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCalback: LocationCallback
+    private lateinit var fusedLocationProviderclient: FusedLocationProviderClient
+    private lateinit var currentLocation: Location
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -66,6 +74,8 @@ class CartFragment : Fragment() {
         val root = inflater.inflate(R.layout.fragment_cart, container, false)
 
         initViews(root)
+        initLocation()
+
         cartviewModel.getMutableLiveDataCartItem().observe(viewLifecycleOwner, Observer {
             if (it == null || it.isEmpty()) {
                 recycler_cart!!.visibility = View.GONE
@@ -83,6 +93,35 @@ class CartFragment : Fragment() {
             }
         })
         return root
+    }
+
+    private fun initLocation() {
+        buildLocationRequest()
+        buildLocationCallback()
+        fusedLocationProviderclient =
+            LocationServices.getFusedLocationProviderClient(requireContext())
+        fusedLocationProviderclient.requestLocationUpdates(
+            locationRequest, locationCalback,
+            Looper.getMainLooper()
+        )
+    }
+
+    private fun buildLocationCallback() {
+        locationCalback = object : LocationCallback() {
+            override fun onLocationResult(p0: LocationResult?) {
+                super.onLocationResult(p0)
+
+                currentLocation = p0!!.lastLocation
+            }
+        }
+    }
+
+    private fun buildLocationRequest() {
+        locationRequest = LocationRequest()
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        locationRequest.interval = 5000
+        locationRequest.fastestInterval = 3000
+        locationRequest.smallestDisplacement = 10f
     }
 
     private fun initViews(root: View?) {
@@ -163,6 +202,8 @@ class CartFragment : Fragment() {
             val view = LayoutInflater.from(context).inflate(R.layout.layout_place_order, null)
 
             val edt_address = view.findViewById<View>(R.id.edt_address) as EditText
+            val edt_comment = view.findViewById<View>(R.id.edt_comment) as EditText
+            val txt_address = view.findViewById<View>(R.id.txt_address_detail) as TextView
             val rdi_home = view.findViewById<View>(R.id.rdi_home_address) as RadioButton
             val rdi_other_address = view.findViewById<View>(R.id.rdi_other_address) as RadioButton
             val rdi_ship_to_this_address =
@@ -185,13 +226,29 @@ class CartFragment : Fragment() {
                 if (isChecked) {
                     edt_address.setText("")
                     edt_address.hint = "Enter your address"
+                    txt_address.visibility = View.GONE
                 }
             }
             rdi_ship_to_this_address.setOnCheckedChangeListener { buttonView, isChecked ->
 
                 if (isChecked) {
-                    Toast.makeText(context, "Implement late with Google API", Toast.LENGTH_SHORT)
-                        .show()
+                    fusedLocationProviderclient.lastLocation
+                        .addOnFailureListener { e ->
+                            txt_address.visibility = View.GONE
+                            Toast.makeText(context, "" + e.message, Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnCompleteListener { it ->
+                            val coordinates = java.lang.StringBuilder()
+                                .append(it.result!!.latitude)
+                                .append("/")
+                                .append(it.result!!.longitude)
+                                .toString()
+
+                            edt_address.setText(coordinates)
+                            txt_address.visibility = View.VISIBLE
+                            txt_address.text = "Implement late with Google API"
+
+                        }
                 }
             }
 
@@ -238,13 +295,28 @@ class CartFragment : Fragment() {
     }
 
     override fun onStop() {
-        super.onStop()
         cartviewModel.onStop()
         compositeDisposable.clear()
         EventBus.getDefault().postSticky(HideFABCart(false))
         if (EventBus.getDefault().isRegistered(this))
             EventBus.getDefault().unregister(this)
+
+        if (fusedLocationProviderclient != null)
+            fusedLocationProviderclient.removeLocationUpdates(locationCalback)
+        super.onStop()
+
     }
+
+    override fun onResume() {
+        super.onResume()
+        calculateTotalPrice()
+        if (fusedLocationProviderclient != null)
+            fusedLocationProviderclient.requestLocationUpdates(
+                locationRequest, locationCalback,
+                Looper.getMainLooper()
+            )
+    }
+
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onUpdateItemInCart(event: UpdateItemInCart) {
