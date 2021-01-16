@@ -41,19 +41,27 @@ object Common {
             return 0.0
         else if (userSelectedSize == null) {
             for (addonModel in userSelectedAddon!!)
-                result += addonModel.price!!.toDouble()
+                result += addonModel.price.toDouble()
             return result
         } else if (userSelectedAddon == null) {
-            result = userSelectedSize.price!!.toDouble()
+            result = userSelectedSize.price.toDouble()
             return result
         } else {
-            result = userSelectedSize.price!!.toDouble()
+            result = userSelectedSize.price.toDouble()
             for (addonModel in userSelectedAddon)
-                result += addonModel.price!!.toDouble()
+                result += addonModel.price.toDouble()
             return result
         }
     }
 
+    fun createOrderNumber(): String {
+        return java.lang.StringBuilder()
+            .append(System.currentTimeMillis())
+            .append(Math.abs(java.util.Random().nextInt()))
+            .toString()
+    }
+
+    val ORDER_REF: String = "Order"
     val COMMENT_REF: String = "Comments"
     var foodSelected: FoodModel? = null
     var categorySelected: CategoryModel? = null
