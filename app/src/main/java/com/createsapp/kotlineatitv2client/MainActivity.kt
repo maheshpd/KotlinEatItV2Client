@@ -25,7 +25,9 @@ import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.single.PermissionListener
 import dmax.dialog.SpotsDialog
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -41,7 +43,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var userRef: DatabaseReference
-    private var providers:List<AuthUI.IdpConfig>? = null
+    private var providers: List<AuthUI.IdpConfig>? = null
 
     override fun onStart() {
         super.onStart()
@@ -119,22 +121,38 @@ class MainActivity : AppCompatActivity() {
                 override fun onDataChange(p0: DataSnapshot) {
                     if (p0.exists()) {
 
-                        val userModel = p0.getValue(UserModel::class.java)
-                        goToHomeActivity(userModel)
+                        compositeDisposable.add(
+                            cloudFunction.getToken()
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe({ braintreeToken ->
+
+                                    dialog.dismiss()
+                                    val userModel = p0.getValue(UserModel::class.java)
+                                    goToHomeActivity(userModel, braintreeToken.token)
+
+                                }, { throwable ->
+                                    dialog.dismiss()
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        "" + throwable.message,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                })
+                        )
 
                     } else {
+                        dialog.dismiss()
                         showRegisterDialog(user)
                     }
-
-                    dialog.dismiss()
-
                 }
 
             })
 
     }
 
-    private fun showRegisterDialog(user:FirebaseUser) {
+    private fun showRegisterDialog(user: FirebaseUser) {
         val builder = androidx.appcompat.app.AlertDialog.Builder(this)
         builder.setTitle("REGISTER")
         builder.setMessage("Please fill information")
@@ -147,7 +165,7 @@ class MainActivity : AppCompatActivity() {
         val edt_phone = itemView.findViewById<EditText>(R.id.edt_phone)
 
         //Set
-            edt_phone.setText(user.phoneNumber)
+        edt_phone.setText(user.phoneNumber)
         builder.setView(itemView)
         builder.setNegativeButton("CANCEL") { dialogInterface, _ -> dialogInterface.dismiss() }
         builder.setPositiveButton("REGISTER") { dialogInterface, _ ->
@@ -171,11 +189,32 @@ class MainActivity : AppCompatActivity() {
                 .setValue(userModel)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        dialogInterface.dismiss()
-                        Toast.makeText(this@MainActivity, "Congratulation ! Register success!", Toast.LENGTH_SHORT)
-                            .show()
+                        compositeDisposable.add(
+                            cloudFunction.getToken()
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe({ braintreeToken ->
 
-                        goToHomeActivity(userModel)
+                                    dialogInterface.dismiss()
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        "Congratulation ! Register success!",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+
+                                    goToHomeActivity(userModel, braintreeToken.token)
+                                }, { t: Throwable? ->
+
+                                    dialogInterface.dismiss()
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        "" + t!!.message,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                })
+                        )
                     }
                 }
 
@@ -186,28 +225,30 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun goToHomeActivity(userModel: UserModel?) {
+    private fun goToHomeActivity(userModel: UserModel?, token: String?) {
         Common.currentUser = userModel!!
-        startActivity(Intent(this,HomeActivity::class.java))
+        Common.currentToken = token!!
+        startActivity(Intent(this, HomeActivity::class.java))
         finish()
 
     }
 
     private fun phoneLogin() {
-        startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers!!).build(), APP_REQUEST_CODE)
+        startActivityForResult(
+            AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers!!)
+                .build(), APP_REQUEST_CODE
+        )
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == APP_REQUEST_CODE)
-        {
+        if (requestCode == APP_REQUEST_CODE) {
             IdpResponse.fromResultIntent(data)
-            if (resultCode == Activity.RESULT_OK)
-            {
+            if (resultCode == Activity.RESULT_OK) {
                 FirebaseAuth.getInstance().currentUser
             } else {
-                Toast.makeText(this,"Failed to sign in",Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Failed to sign in", Toast.LENGTH_SHORT).show()
             }
         }
     }
