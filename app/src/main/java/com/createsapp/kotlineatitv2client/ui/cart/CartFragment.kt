@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Looper
 import android.os.Parcelable
 import android.text.TextUtils
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.cardview.widget.CardView
@@ -23,6 +24,7 @@ import com.braintreepayments.api.dropin.DropInRequest
 import com.braintreepayments.api.dropin.DropInResult
 import com.createsapp.kotlineatitv2client.R
 import com.createsapp.kotlineatitv2client.adapter.MyCartAdapter
+import com.createsapp.kotlineatitv2client.callback.ILoadTimeFromFirebaseCallback
 import com.createsapp.kotlineatitv2client.callback.IMyButtonCallback
 import com.createsapp.kotlineatitv2client.common.Common
 import com.createsapp.kotlineatitv2client.common.MySwipeHelper
@@ -37,7 +39,10 @@ import com.createsapp.kotlineatitv2client.model.Order
 import com.createsapp.kotlineatitv2client.remote.ICloudFunction
 import com.createsapp.kotlineatitv2client.remote.RetrofitCloudClient
 import com.google.android.gms.location.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -49,9 +54,10 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.*
 
-class CartFragment : Fragment() {
+class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
 
 
     private val REQUEST_BRAINTREE_CODE: Int = 8888
@@ -76,6 +82,7 @@ class CartFragment : Fragment() {
     internal var comment: String = ""
 
     lateinit var cloudFunctions: ICloudFunction
+    lateinit var listener: ILoadTimeFromFirebaseCallback
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -152,6 +159,8 @@ class CartFragment : Fragment() {
 
 
         cloudFunctions = RetrofitCloudClient.getInstance().create(ICloudFunction::class.java)
+
+        listener = this
 
         cartDataSource = LocalCartDataSource(CartDatabase.getInstance(requireContext()).cartDAO())
 
@@ -364,7 +373,7 @@ class CartFragment : Fragment() {
                                     order.transactionId = "Cash On Delivery"
 
                                     //Submit to Firebase
-                                    writeOrderToFirebase(order)
+                                    syncLocalTimeWithServerTime(order)
 
                                 }
 
@@ -612,7 +621,7 @@ class CartFragment : Fragment() {
                                                 .subscribe(
                                                     { braintreeTransaction ->
 
-                                                        if (braintreeTransaction.source) {
+                                                        if (braintreeTransaction.success) {
                                                             //Create Order
                                                             val finalPrice = totalPrice
                                                             val order = Order()
@@ -638,7 +647,7 @@ class CartFragment : Fragment() {
                                                                 braintreeTransaction.transaction!!.id
 
                                                             //Submit to Firebase
-                                                            writeOrderToFirebase(order)
+                                                            syncLocalTimeWithServerTime(order)
                                                         }
                                                     },
                                                     { t: Throwable? ->
@@ -670,6 +679,36 @@ class CartFragment : Fragment() {
                     })
             }
         }
+    }
+
+    private fun syncLocalTimeWithServerTime(order: Order) {
+        val offsetRef = FirebaseDatabase.getInstance().getReference(".info/serverTimeOffset")
+        offsetRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val offset = snapshot.getValue(Long::class.java)
+                val estimatedServerTimeMs =
+                    System.currentTimeMillis() + offset!!  //Add missing offset to your current time
+
+                val sdf = SimpleDateFormat("MMM dd yyyy, HH:mm")
+                val date = Date(estimatedServerTimeMs)
+                Log.d("EDMT_DEV", "" + sdf.format(date))
+                listener.onLoadTimeSuccess(order, estimatedServerTimeMs)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                listener.onLoadTimeFailed(error.message)
+            }
+
+        })
+    }
+
+    override fun onLoadTimeSuccess(order: Order, estimatedTimeMs: Long) {
+        order.createDate = (estimatedTimeMs)
+        writeOrderToFirebase(order)
+    }
+
+    override fun onLoadTimeFailed(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
 }

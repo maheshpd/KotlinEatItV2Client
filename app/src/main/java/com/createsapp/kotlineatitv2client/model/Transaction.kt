@@ -7,6 +7,7 @@ class Transaction {
     var currencyIsoCode: String? = null
     var amount: String? = null
     var merchantAccountId: String? = null
+    var subMerchantAccountId: String? = null
     var masterMerchantAccountId: String? = null
     var orderId: String? = null
     var createAt: String? = null

@@ -121,15 +121,14 @@ class MainActivity : AppCompatActivity() {
                 override fun onDataChange(p0: DataSnapshot) {
                     if (p0.exists()) {
 
-                        compositeDisposable.add(
+                        /*compositeDisposable.add(
                             cloudFunction.getToken()
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe({ braintreeToken ->
 
                                     dialog.dismiss()
-                                    val userModel = p0.getValue(UserModel::class.java)
-                                    goToHomeActivity(userModel, braintreeToken.token)
+
 
                                 }, { throwable ->
                                     dialog.dismiss()
@@ -140,12 +139,17 @@ class MainActivity : AppCompatActivity() {
                                     ).show()
 
                                 })
-                        )
+                        )*/
+
+                        val userModel = p0.getValue(UserModel::class.java)
+                        goToHomeActivity(userModel/*, braintreeToken.token*/)
 
                     } else {
-                        dialog.dismiss()
                         showRegisterDialog(user)
                     }
+
+                    dialog.dismiss()
+
                 }
 
             })
@@ -203,7 +207,7 @@ class MainActivity : AppCompatActivity() {
                                     )
                                         .show()
 
-                                    goToHomeActivity(userModel, braintreeToken.token)
+                                    goToHomeActivity(userModel/*, braintreeToken.token*/)
                                 }, { t: Throwable? ->
 
                                     dialogInterface.dismiss()
@@ -225,9 +229,9 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun goToHomeActivity(userModel: UserModel?, token: String?) {
+    private fun goToHomeActivity(userModel: UserModel?/*, token: String?*/) {
         Common.currentUser = userModel!!
-        Common.currentToken = token!!
+//        Common.currentToken = token!!
         startActivity(Intent(this, HomeActivity::class.java))
         finish()
 
