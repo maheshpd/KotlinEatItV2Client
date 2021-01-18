@@ -22,6 +22,7 @@ import com.createsapp.kotlineatitv2client.database.CartDatabase
 import com.createsapp.kotlineatitv2client.database.CartItem
 import com.createsapp.kotlineatitv2client.database.LocalCartDataSource
 import com.createsapp.kotlineatitv2client.eventbus.CountCartEven
+import com.createsapp.kotlineatitv2client.eventbus.MenuItemBack
 import com.createsapp.kotlineatitv2client.model.CommentModel
 import com.createsapp.kotlineatitv2client.model.FoodModel
 import com.createsapp.kotlineatitv2client.ui.comment.CommentFragment
@@ -495,4 +496,10 @@ class FoodDetailFragment : Fragment(), TextWatcher {
             }
         }
     }
+
+    override fun onDestroy() {
+        EventBus.getDefault().postSticky(MenuItemBack())
+        super.onDestroy()
+    }
+
 }

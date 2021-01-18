@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.createsapp.kotlineatitv2client.R
 import com.createsapp.kotlineatitv2client.adapter.MyFoodListaAdapter
 import com.createsapp.kotlineatitv2client.common.Common
+import com.createsapp.kotlineatitv2client.eventbus.MenuItemBack
+import org.greenrobot.eventbus.EventBus
 
 class FoodListFragment : Fragment() {
 
@@ -58,5 +60,10 @@ class FoodListFragment : Fragment() {
             AnimationUtils.loadLayoutAnimation(context, R.anim.layout_item_from_left)
 
         (activity as AppCompatActivity).supportActionBar!!.title = Common.categorySelected!!.name
+    }
+
+    override fun onDestroy() {
+        EventBus.getDefault().postSticky(MenuItemBack())
+        super.onDestroy()
     }
 }

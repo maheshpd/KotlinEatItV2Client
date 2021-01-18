@@ -49,6 +49,8 @@ class HomeActivity : AppCompatActivity() {
     private var drawer: DrawerLayout? = null
     private var dialog: AlertDialog? = null
 
+    private var menuItemClick = -1
+
     override fun onResume() {
         super.onResume()
         countCartItem()
@@ -100,19 +102,26 @@ class HomeActivity : AppCompatActivity() {
                     signOut()
                 }
                 R.id.nav_home -> {
-                    navController.navigate(R.id.nav_home)
+                    if (menuItemClick != item.itemId)
+                        navController.navigate(R.id.nav_home)
                 }
                 R.id.nav_cart -> {
-                    navController.navigate(R.id.nav_cart)
+                    if (menuItemClick != item.itemId)
+                        navController.navigate(R.id.nav_cart)
                 }
                 R.id.nav_menu -> {
-                    navController.navigate(R.id.nav_menu)
+                    if (menuItemClick != item.itemId)
+                        navController.navigate(R.id.nav_menu)
                 }
 
                 R.id.nav_view_order -> {
-                    navController.navigate(R.id.nav_view_order)
+                    if (menuItemClick != item.itemId)
+                        navController.navigate(R.id.nav_view_order)
                 }
+
             }
+
+            menuItemClick = item.itemId
             true
         }
         countCartItem()
@@ -329,6 +338,14 @@ class HomeActivity : AppCompatActivity() {
                 })
         }
     }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    fun onMenuItemBack(event: MenuItemBack) {
+        menuItemClick = -1
+        if (supportFragmentManager.backStackEntryCount > 0)
+            supportFragmentManager.popBackStack()
+    }
+
 
     private fun countCartItem() {
         cartDataSource.countItemInCart(Common.currentUser?.uid!!)

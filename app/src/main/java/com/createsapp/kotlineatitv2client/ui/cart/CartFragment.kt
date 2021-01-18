@@ -34,6 +34,7 @@ import com.createsapp.kotlineatitv2client.database.CartItem
 import com.createsapp.kotlineatitv2client.database.LocalCartDataSource
 import com.createsapp.kotlineatitv2client.eventbus.CountCartEven
 import com.createsapp.kotlineatitv2client.eventbus.HideFABCart
+import com.createsapp.kotlineatitv2client.eventbus.MenuItemBack
 import com.createsapp.kotlineatitv2client.eventbus.UpdateItemInCart
 import com.createsapp.kotlineatitv2client.model.Order
 import com.createsapp.kotlineatitv2client.remote.ICloudFunction
@@ -711,6 +712,11 @@ class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
 
     override fun onLoadTimeFailed(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDestroy() {
+        EventBus.getDefault().postSticky(MenuItemBack())
+        super.onDestroy()
     }
 
 }

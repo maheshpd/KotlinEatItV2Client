@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.view.animation.LayoutAnimationController
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -16,7 +15,8 @@ import com.asksira.loopingviewpager.LoopingViewPager
 import com.createsapp.kotlineatitv2client.R
 import com.createsapp.kotlineatitv2client.adapter.MyBestDealsAdapter
 import com.createsapp.kotlineatitv2client.adapter.MyPopularCategoriesAdapter
-import kotlinx.android.synthetic.main.fragment_home.*
+import com.createsapp.kotlineatitv2client.eventbus.MenuItemBack
+import org.greenrobot.eventbus.EventBus
 
 class HomeFragment : Fragment() {
 
@@ -73,6 +73,11 @@ class HomeFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         viewPager!!.pauseAutoScroll()
+    }
+
+    override fun onDestroy() {
+        EventBus.getDefault().postSticky(MenuItemBack())
+        super.onDestroy()
     }
 
 }

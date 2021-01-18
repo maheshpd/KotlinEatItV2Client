@@ -16,12 +16,14 @@ import com.createsapp.kotlineatitv2client.R
 import com.createsapp.kotlineatitv2client.adapter.MyOrderAdapter
 import com.createsapp.kotlineatitv2client.callback.ILoadOrderCallbackListener
 import com.createsapp.kotlineatitv2client.common.Common
+import com.createsapp.kotlineatitv2client.eventbus.MenuItemBack
 import com.createsapp.kotlineatitv2client.model.Order
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import dmax.dialog.SpotsDialog
+import org.greenrobot.eventbus.EventBus
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -107,5 +109,10 @@ class ViewOrderFragment : Fragment(), ILoadOrderCallbackListener {
     override fun onLoadOrderFailed(message: String) {
         dialog.dismiss()
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDestroy() {
+        EventBus.getDefault().postSticky(MenuItemBack())
+        super.onDestroy()
     }
 }
