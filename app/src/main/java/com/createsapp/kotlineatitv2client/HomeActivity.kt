@@ -108,6 +108,10 @@ class HomeActivity : AppCompatActivity() {
                 R.id.nav_menu -> {
                     navController.navigate(R.id.nav_menu)
                 }
+
+                R.id.nav_view_order -> {
+                    navController.navigate(R.id.nav_view_order)
+                }
             }
             true
         }

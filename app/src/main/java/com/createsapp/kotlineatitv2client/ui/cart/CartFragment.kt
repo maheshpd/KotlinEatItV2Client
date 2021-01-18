@@ -355,6 +355,7 @@ class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
                                 override fun onSuccess(totalPrice: Double) {
                                     val finalPrice = totalPrice
                                     val order = Order()
+                                    order.userId = Common.currentUser!!.uid!!
                                     order.userName = Common.currentUser!!.name!!
                                     order.userPhone = Common.currentUser!!.phone!!
                                     order.shippingAddress = address
@@ -704,6 +705,7 @@ class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
 
     override fun onLoadTimeSuccess(order: Order, estimatedTimeMs: Long) {
         order.createDate = (estimatedTimeMs)
+        order.orderStatus = 0
         writeOrderToFirebase(order)
     }
 
