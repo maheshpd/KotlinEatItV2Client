@@ -1,11 +1,9 @@
 package com.createsapp.kotlineatitv2client.ui.menu
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.createsapp.kotlineatitv2client.callback.ICategoryCallbackListener
 import com.createsapp.kotlineatitv2client.common.Common
-import com.createsapp.kotlineatitv2client.model.BestDealModel
 import com.createsapp.kotlineatitv2client.model.CategoryModel
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -44,21 +42,20 @@ class MenuViewModel : ViewModel(), ICategoryCallbackListener {
         return messageError
     }
 
-    private fun loadCategory() {
+    fun loadCategory() {
         val tempList = ArrayList<CategoryModel>()
         val categoryRef = FirebaseDatabase.getInstance().getReference(Common.CATEGORY_REF)
         categoryRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 categoryCallBackListener
-                    .onCategoryLoadFailed(p0.message!!)
+                    .onCategoryLoadFailed(p0.message)
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                for (itemSnapshot in p0!!.children)
-                {
+                for (itemSnapshot in p0.children) {
                     val model = itemSnapshot.getValue<CategoryModel>(CategoryModel::class.java)
                     model!!.menu_id = itemSnapshot.key
-                    tempList.add(model!!)
+                    tempList.add(model)
                 }
 
                 categoryCallBackListener.onCategoryLoadSuccess(tempList)

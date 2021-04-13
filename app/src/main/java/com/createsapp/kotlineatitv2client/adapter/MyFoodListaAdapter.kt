@@ -29,7 +29,8 @@ import org.greenrobot.eventbus.EventBus
 class MyFoodListaAdapter(
     internal var context: Context,
     internal var foodList: List<FoodModel>
-) : RecyclerView.Adapter<MyFoodListaAdapter.MyViewHolder>() {
+) :
+    RecyclerView.Adapter<MyFoodListaAdapter.MyViewHolder>() {
 
     private val compositeDisposable: CompositeDisposable
     private val cartDataSource: CartDataSource
@@ -91,7 +92,8 @@ class MyFoodListaAdapter(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         Glide.with(context).load(foodList.get(position).image).into(holder.img_food_image!!)
         holder.txt_food_name!!.text = foodList.get(position).name
-        holder.txt_food_price!!.text = foodList.get(position).price.toString()
+        holder.txt_food_price!!.text =
+            StringBuilder("$").append(foodList.get(position).price.toString())
 
         //Event
         holder.setListener(object : IRecyclerItemClickListener {
@@ -111,7 +113,7 @@ class MyFoodListaAdapter(
             cartItem.foodId = foodList.get(position).id!!
             cartItem.foodName = foodList.get(position).name!!
             cartItem.foodImage = foodList.get(position).image!!
-            cartItem.foodPrice = foodList.get(position).price!!.toDouble()
+            cartItem.foodPrice = foodList.get(position).price.toDouble()
             cartItem.foodQuantity = 1
             cartItem.foodExtraPrice = 0.0
             cartItem.foodAddon = "Default"

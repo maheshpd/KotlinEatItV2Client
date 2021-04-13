@@ -70,15 +70,19 @@ class MyCategoriesAdapter(
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         Glide.with(context).load(categoriesList.get(position).image).into(holder.category_image!!)
-        holder.category_name!!.setText(categoriesList.get(position).name)
+        holder.category_name!!.text = categoriesList.get(position).name
 
         //Event
-        holder.setListener(object: IRecyclerItemClickListener {
+        holder.setListener(object : IRecyclerItemClickListener {
             override fun onItemClick(view: View, pos: Int) {
                 Common.categorySelected = categoriesList.get(pos)
-                EventBus.getDefault().postSticky(CategoryClick(true,categoriesList.get(pos)))
+                EventBus.getDefault().postSticky(CategoryClick(true, categoriesList.get(pos)))
             }
 
         })
+    }
+
+    fun getCategoryList(): List<CategoryModel> {
+        return categoriesList
     }
 }

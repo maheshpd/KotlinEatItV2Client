@@ -23,5 +23,6 @@
     <string name="add_on">Add on</string>
     <string name="sign_out">Sign Out</string>
     <string name="action_clear_cart">Clear Cart</string>
+    <string name="search">Search</string>
 
 </resources>

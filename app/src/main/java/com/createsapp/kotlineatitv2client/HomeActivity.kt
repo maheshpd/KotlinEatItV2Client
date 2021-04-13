@@ -90,7 +90,7 @@ class HomeActivity : AppCompatActivity() {
 
         var headerView = navView.getHeaderView(0)
         var txt_user = headerView.findViewById<TextView>(R.id.txt_user)
-        Common.setSpanString("Hey", Common.currentUser!!.uid, txt_user)
+        Common.setSpanString("Hey ", Common.currentUser!!.uid, txt_user)
 
         navView.setNavigationItemSelectedListener { item ->
 
@@ -107,7 +107,8 @@ class HomeActivity : AppCompatActivity() {
                 }
                 R.id.nav_cart -> {
                     if (menuItemClick != item.itemId)
-                        navController.navigate(R.id.nav_cart)
+//                        navController.navigate(R.id.nav_cart)
+                        Toast.makeText(this, "", Toast.LENGTH_SHORT).show()
                 }
                 R.id.nav_menu -> {
                     if (menuItemClick != item.itemId)
