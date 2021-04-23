@@ -106,9 +106,11 @@ class HomeActivity : AppCompatActivity() {
                         navController.navigate(R.id.nav_home)
                 }
                 R.id.nav_cart -> {
-                    if (menuItemClick != item.itemId)
-//                        navController.navigate(R.id.nav_cart)
-                        Toast.makeText(this, "", Toast.LENGTH_SHORT).show()
+
+                    navController.navigate(R.id.nav_cart)
+//                    if (menuItemClick != item.itemId)
+
+//                        Toast.makeText(this, "", Toast.LENGTH_SHORT).show()
                 }
                 R.id.nav_menu -> {
                     if (menuItemClick != item.itemId)

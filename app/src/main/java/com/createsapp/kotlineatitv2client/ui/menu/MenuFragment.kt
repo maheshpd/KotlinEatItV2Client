@@ -89,7 +89,7 @@ class MenuFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-
+        inflater.inflate(R.menu.search_menu, menu)
         val menuItem = menu.findItem(R.id.action_search)
 
         val searchManager =
