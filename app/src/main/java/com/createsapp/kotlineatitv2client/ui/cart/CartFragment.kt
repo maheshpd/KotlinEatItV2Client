@@ -1,8 +1,10 @@
 package com.createsapp.kotlineatitv2client.ui.cart
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Geocoder
 import android.location.Location
@@ -14,6 +16,7 @@ import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.cardview.widget.CardView
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -36,9 +39,13 @@ import com.createsapp.kotlineatitv2client.eventbus.CountCartEven
 import com.createsapp.kotlineatitv2client.eventbus.HideFABCart
 import com.createsapp.kotlineatitv2client.eventbus.MenuItemBack
 import com.createsapp.kotlineatitv2client.eventbus.UpdateItemInCart
+import com.createsapp.kotlineatitv2client.model.FCMResponse
+import com.createsapp.kotlineatitv2client.model.FCMSendData
 import com.createsapp.kotlineatitv2client.model.Order
 import com.createsapp.kotlineatitv2client.remote.ICloudFunction
+import com.createsapp.kotlineatitv2client.remote.IFCMService
 import com.createsapp.kotlineatitv2client.remote.RetrofitCloudClient
+import com.createsapp.kotlineatitv2client.remote.RetrofitFCMClient
 import com.google.android.gms.location.*
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -57,6 +64,7 @@ import org.greenrobot.eventbus.ThreadMode
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.HashMap
 
 class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
 
@@ -83,6 +91,7 @@ class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
     internal var comment: String = ""
 
     lateinit var cloudFunctions: ICloudFunction
+    lateinit var ifcmService: IFCMService
     lateinit var listener: ILoadTimeFromFirebaseCallback
 
     override fun onCreateView(
@@ -130,6 +139,16 @@ class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
         buildLocationCallback()
         fusedLocationProviderclient =
             LocationServices.getFusedLocationProviderClient(requireContext())
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
         fusedLocationProviderclient.requestLocationUpdates(
             locationRequest, locationCalback,
             Looper.getMainLooper()
@@ -160,6 +179,7 @@ class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
 
 
         cloudFunctions = RetrofitCloudClient.getInstance().create(ICloudFunction::class.java)
+        ifcmService = RetrofitFCMClient.getInstance().create(IFCMService::class.java)
 
         listener = this
 
@@ -267,6 +287,16 @@ class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
             rdi_ship_to_this_address.setOnCheckedChangeListener { buttonView, isChecked ->
 
                 if (isChecked) {
+                    if (ActivityCompat.checkSelfPermission(
+                            requireContext(),
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                            requireContext(),
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+
+                    }
                     fusedLocationProviderclient.lastLocation
                         .addOnFailureListener { e ->
                             txt_address.visibility = View.GONE
@@ -380,12 +410,9 @@ class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
                                 }
 
                                 override fun onError(throwable: Throwable) {
-                                    Toast.makeText(
-                                        requireContext(),
-                                        "" + throwable.message,
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
+                                    if (!throwable.message!!.contains("Query returned empty"))
+                                        Toast.makeText(context, "[SUM CART]", Toast.LENGTH_SHORT)
+                                            .show()
                                 }
 
                             })
@@ -418,11 +445,44 @@ class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
                             }
 
                             override fun onSuccess(t: Int) {
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Order placed successfuly",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+
+                                val dataSend = HashMap<String, String>()
+                                dataSend.put(Common.NOTI_TITLE, "New Order")
+                                dataSend.put(
+                                    Common.NOTI_CONTENT,
+                                    "You have new order " + Common.currentUser!!.phone
+                                )
+
+                                val sendData = FCMSendData(Common.getNewOrderTopic(), dataSend)
+
+                                /* compositeDisposable.add(
+                                    ifcmService.sendNotification(sendData)
+                                        .subscrineOn(Schedulers.io())
+                                        .observe
+                                )*/
+
+                                compositeDisposable.add(
+                                    ifcmService.sendNotification(sendData)
+                                        .subscribeOn(Schedulers.io())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe({ t: FCMResponse? ->
+                                            if (t!!.success != 0)
+                                                Toast.makeText(
+                                                    context!!,
+                                                    "Order placed succesfully",
+                                                    Toast.LENGTH_SHORT
+                                                )
+                                                    .show()
+                                        }, { t: Throwable? ->
+                                            Toast.makeText(
+                                                context!!,
+                                                "Order was sent but notification failed",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        })
+                                )
+
+
                             }
 
                             override fun onError(e: Throwable) {
@@ -653,16 +713,20 @@ class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
                                                         }
                                                     },
                                                     { t: Throwable? ->
-                                                        Toast.makeText(
-                                                            requireContext(),
-                                                            "" + t!!.message,
-                                                            Toast.LENGTH_SHORT
-                                                        ).show()
+                                                        if (!t!!.message!!.contains("Query returned empty"))
+                                                            Toast.makeText(
+                                                                context,
+                                                                "[SUM CART]",
+                                                                Toast.LENGTH_SHORT
+                                                            )
+                                                                .show()
+
                                                     })
                                         )
 
                                     },
                                         { t: Throwable? ->
+
 
                                             Toast.makeText(
                                                 requireContext(),
@@ -674,8 +738,9 @@ class CartFragment : Fragment(), ILoadTimeFromFirebaseCallback {
                         }
 
                         override fun onError(e: Throwable) {
-                            Toast.makeText(requireContext(), "" + e.message, Toast.LENGTH_SHORT)
-                                .show()
+
+                            if (!e.message!!.contains("Query returned empty"))
+                                Toast.makeText(context, "[SUM Cart]", Toast.LENGTH_SHORT).show()
                         }
 
                     })

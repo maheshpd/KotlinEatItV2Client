@@ -231,7 +231,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun goToHomeActivity(userModel: UserModel?/*, token: String?*/) {
-
+//        FirebaseInstanceId
         FirebaseInstanceId.getInstance()
             .instanceId
             .addOnFailureListener { e ->
@@ -255,7 +255,6 @@ class MainActivity : AppCompatActivity() {
                     finish()
                 }
             }
-
 
         Common.currentUser = userModel!!
 //        Common.currentToken = token!!
